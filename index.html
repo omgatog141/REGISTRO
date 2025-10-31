@@ -10,9 +10,12 @@
       font-family: 'Poppins', sans-serif;
       background: #f4f6f7;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      height: 100vh;
+      justify-content: flex-start;
+      min-height: 100vh;
+      margin: 0;
+      padding-top: 2rem;
     }
     form {
       background: white;
@@ -21,6 +24,7 @@
       box-shadow: 0 5px 15px rgba(0,0,0,0.1);
       max-width: 400px;
       width: 90%;
+      margin-bottom: 2rem;
     }
     h2 {
       color: #00B191;
@@ -42,14 +46,39 @@
       font-weight: 600;
       border: none;
       cursor: pointer;
+      transition: background 0.3s ease;
     }
     button:hover { background: #009e80; }
-    .message { text-align: center; font-weight: 500; }
+    .message { text-align: center; font-weight: 500; margin-top: 0.5rem; }
     .success { color: #00B191; }
     .error { color: red; }
+
+    table {
+      border-collapse: collapse;
+      width: 90%;
+      max-width: 600px;
+      background: white;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 0.8rem;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+    }
+    th {
+      background: #00B191;
+      color: white;
+      text-align: center;
+    }
+    td {
+      text-align: center;
+    }
   </style>
 </head>
 <body>
+
   <form id="userForm">
     <h2>Registro de Usuario</h2>
     <input type="number" id="id_expediente" placeholder="ID Expediente" required>
@@ -59,47 +88,82 @@
     <p id="msg" class="message"></p>
   </form>
 
+  <table id="tablaUsuarios">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Área</th>
+        <th>Fecha</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
   <script>
-  const form = document.getElementById('userForm');
-  const msg = document.getElementById('msg');
+    const form = document.getElementById('userForm');
+    const msg = document.getElementById('msg');
+    const tabla = document.querySelector('#tablaUsuarios tbody');
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    // Datos del formulario
-    const data = {
-      id_expediente: document.getElementById('id_expediente').value,
-      nombre: document.getElementById('nombre').value,
-      area: document.getElementById('area').value,
-    };
-
-    // ✅ URL PÚBLICA DE NGROK — SIN TEXTO EXTRA
+    // Actualizar la URL actual de ngrok
     const API_URL = 'https://tracelessly-aryepiglottic-tawanna.ngrok-free.dev/api/usuarios';
 
-    try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
+    // Cargar usuarios al iniciar
+    async function cargarUsuarios() {
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        tabla.innerHTML = data.map(u => `
+          <tr>
+            <td>${u.id_expediente}</td>
+            <td>${u.nombre}</td>
+            <td>${u.area}</td>
+            <td>${new Date(u.created_at).toLocaleString()}</td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error al cargar usuarios:', error);
+      }
+    }
 
-      // Procesar la respuesta del servidor
-      const result = await res.json();
+    // Registrar nuevo usuario
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.textContent = 'Enviando datos...';
+      msg.className = 'message';
 
-      if (res.ok) {
-        msg.textContent = 'Usuario registrado correctamente.';
+      const data = {
+        id_expediente: document.getElementById('id_expediente').value,
+        nombre: document.getElementById('nombre').value,
+        area: document.getElementById('area').value,
+      };
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+
+        if (!res.ok) {
+          const result = await res.json();
+          throw new Error(result.message || 'Error al registrar usuario.');
+        }
+
+        msg.textContent = '✅ Usuario registrado correctamente.';
         msg.className = 'message success';
         form.reset();
-      } else {
-        msg.textContent = result.message || 'Error al registrar usuario.';
+        cargarUsuarios(); // Recargar tabla
+
+      } catch (error) {
+        console.error('Error:', error);
+        msg.textContent = '❌ Error de conexión con el servidor.';
         msg.className = 'message error';
       }
-    } catch (err) {
-      console.error(err);
-      msg.textContent = 'Error de conexión con el servidor.';
-      msg.className = 'message error';
-    }
-  });
-</script>
+    });
+
+    // Inicializar tabla
+    cargarUsuarios();
+  </script>
 </body>
 </html>
