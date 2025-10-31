@@ -60,42 +60,46 @@
   </form>
 
   <script>
-    const form = document.getElementById('userForm');
-    const msg = document.getElementById('msg');
+  const form = document.getElementById('userForm');
+  const msg = document.getElementById('msg');
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-      const data = {
-        id_expediente: document.getElementById('id_expediente').value,
-        nombre: document.getElementById('nombre').value,
-        area: document.getElementById('area').value,
-      };
+    // Datos del formulario
+    const data = {
+      id_expediente: document.getElementById('id_expediente').value,
+      nombre: document.getElementById('nombre').value,
+      area: document.getElementById('area').value,
+    };
 
-      const API_URL = 'https://tracelessly-aryepiglottic-tawanna.ngrok-free.dev -> http://localhost:3000'; // reemplaza con tu URL ngrok
+    // ✅ URL PÚBLICA DE NGROK — SIN TEXTO EXTRA
+    const API_URL = 'https://tracelessly-aryepiglottic-tawanna.ngrok-free.dev/api/usuarios';
 
-      try {
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
 
-        const result = await res.json();
+      // Procesar la respuesta del servidor
+      const result = await res.json();
 
-        if (res.ok) {
-          msg.textContent = 'Usuario registrado correctamente.';
-          msg.className = 'message success';
-          form.reset();
-        } else {
-          msg.textContent = result.message || 'Error al registrar usuario.';
-          msg.className = 'message error';
-        }
-      } catch (err) {
-        msg.textContent = 'Error de conexión con el servidor.';
+      if (res.ok) {
+        msg.textContent = 'Usuario registrado correctamente.';
+        msg.className = 'message success';
+        form.reset();
+      } else {
+        msg.textContent = result.message || 'Error al registrar usuario.';
         msg.className = 'message error';
       }
-    });
-  </script>
+    } catch (err) {
+      console.error(err);
+      msg.textContent = 'Error de conexión con el servidor.';
+      msg.className = 'message error';
+    }
+  });
+</script>
 </body>
 </html>
