@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registro de Usuarios</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f4f6f7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    form {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      max-width: 400px;
+      width: 90%;
+    }
+    h2 {
+      color: #00B191;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    input, button {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    input:focus { border-color: #00B191; outline: none; }
+    button {
+      background: #00B191;
+      color: white;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover { background: #009e80; }
+    .message { text-align: center; font-weight: 500; }
+    .success { color: #00B191; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+  <form id="userForm">
+    <h2>Registro de Usuario</h2>
+    <input type="number" id="id_expediente" placeholder="ID Expediente" required>
+    <input type="text" id="nombre" placeholder="Nombre" required>
+    <input type="text" id="area" placeholder="Área" required>
+    <button type="submit">Guardar</button>
+    <p id="msg" class="message"></p>
+  </form>
+
+  <script>
+    const form = document.getElementById('userForm');
+    const msg = document.getElementById('msg');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const data = {
+        id_expediente: document.getElementById('id_expediente').value,
+        nombre: document.getElementById('nombre').value,
+        area: document.getElementById('area').value,
+      };
+
+      const API_URL = 'https://headway-luis.ngrok-free.dev/api/usuarios'; // reemplaza con tu URL ngrok
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+
+        if (res.ok) {
+          msg.textContent = 'Usuario registrado correctamente.';
+          msg.className = 'message success';
+          form.reset();
+        } else {
+          msg.textContent = result.message || 'Error al registrar usuario.';
+          msg.className = 'message error';
+        }
+      } catch (err) {
+        msg.textContent = 'Error de conexión con el servidor.';
+        msg.className = 'message error';
+      }
+    });
+  </script>
+</body>
+</html>
